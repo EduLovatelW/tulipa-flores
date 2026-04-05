@@ -13,7 +13,7 @@ function Checkout({ carrinho, onNavegar, onFinalizarPedido }) {
   });
   const [salvando, setSalvando] = useState(false);
 
-  const subtotal = carrinho.reduce((acc, item) => acc + Number(item.preco), 0);
+  const subtotal = carrinho.reduce((acc, item) => acc + Number(item.preco) * item.quantidade, 0);
   const frete = form.tipoEntrega === "entrega" ? 15 : 0;
   const total = subtotal + frete;
 
@@ -55,12 +55,14 @@ function Checkout({ carrinho, onNavegar, onFinalizarPedido }) {
 
       if (erroPedido) throw erroPedido;
 
-      const itens = carrinho.map((item) => ({
-        pedido_id: pedidoSalvo.id,
-        produto_nome: item.nome,
-        produto_emoji: item.emoji,
-        preco: item.preco,
-      }));
+      const itens = carrinho.flatMap((item) =>
+        Array.from({ length: item.quantidade }, () => ({
+          pedido_id: pedidoSalvo.id,
+          produto_nome: item.nome,
+          produto_emoji: item.emoji,
+          preco: item.preco,
+        }))
+      );
 
       const { error: erroItens } = await supabase
         .from("itens_pedido")
@@ -165,7 +167,7 @@ function Checkout({ carrinho, onNavegar, onFinalizarPedido }) {
           {/* Pagamento */}
           <div className="bg-white rounded-2xl shadow p-6">
             <h3 className="text-lg font-bold text-gray-700 mb-4">Forma de Pagamento</h3>
-            <div className="flex gap-3 flex-wrap">
+            <div className="grid grid-cols-3 gap-3">
               {[
                 { valor: "pix", label: "Pix", emoji: "💠" },
                 { valor: "cartao", label: "Cartao", emoji: "💳" },
@@ -174,7 +176,7 @@ function Checkout({ carrinho, onNavegar, onFinalizarPedido }) {
                 <button
                   key={op.valor}
                   onClick={() => setForm({ ...form, pagamento: op.valor })}
-                  className={`flex-1 py-4 rounded-xl font-semibold border-2 transition ${
+                  className={`py-4 rounded-xl font-semibold border-2 transition ${
                     form.pagamento === op.valor
                       ? "border-pink-600 bg-pink-50 text-pink-600"
                       : "border-gray-200 text-gray-500 hover:border-gray-300"
@@ -205,10 +207,17 @@ function Checkout({ carrinho, onNavegar, onFinalizarPedido }) {
           <h3 className="text-xl font-bold text-gray-700 mb-4">Resumo</h3>
 
           <div className="flex flex-col gap-2 mb-4">
-            {carrinho.map((item, index) => (
-              <div key={index} className="flex justify-between text-sm text-gray-500">
-                <span className="truncate mr-2">{item.nome}</span>
-                <span className="flex-shrink-0">R$ {Number(item.preco).toFixed(2).replace(".", ",")}</span>
+            {carrinho.map((item) => (
+              <div key={item.id} className="flex justify-between text-sm text-gray-500">
+                <span className="truncate mr-2">
+                  {item.nome}
+                  {item.quantidade > 1 && (
+                    <span className="text-gray-400 ml-1">×{item.quantidade}</span>
+                  )}
+                </span>
+                <span className="flex-shrink-0">
+                  R$ {(Number(item.preco) * item.quantidade).toFixed(2).replace(".", ",")}
+                </span>
               </div>
             ))}
           </div>

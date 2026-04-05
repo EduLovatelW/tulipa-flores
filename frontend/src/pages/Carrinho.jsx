@@ -1,5 +1,6 @@
-function Carrinho({ carrinho, onRemover, onNavegar }) {
-  const total = carrinho.reduce((acc, item) => acc + Number(item.preco), 0);
+function Carrinho({ carrinho, onRemover, onAlterarQuantidade, onNavegar }) {
+  const total = carrinho.reduce((acc, item) => acc + Number(item.preco) * item.quantidade, 0);
+  const totalItens = carrinho.reduce((acc, item) => acc + item.quantidade, 0);
 
   if (carrinho.length === 0) {
     return (
@@ -23,45 +24,85 @@ function Carrinho({ carrinho, onRemover, onNavegar }) {
     <div>
       <div className="mb-8">
         <h2 className="text-3xl font-bold text-pink-700 mb-2">Meu Carrinho</h2>
-        <p className="text-gray-500">{carrinho.length} {carrinho.length === 1 ? "item" : "itens"} no carrinho</p>
+        <p className="text-gray-500">
+          {totalItens} {totalItens === 1 ? "item" : "itens"} no carrinho
+        </p>
       </div>
 
       <div className="grid md:grid-cols-3 gap-8">
         {/* Lista de itens */}
         <div className="md:col-span-2 flex flex-col gap-4">
-          {carrinho.map((item, index) => (
+          {carrinho.map((item) => (
             <div
-              key={index}
-              className="bg-white rounded-2xl shadow p-5 flex items-center gap-4"
+              key={item.id}
+              className="bg-white rounded-2xl shadow p-4 sm:p-5 flex items-center gap-3 sm:gap-4"
             >
-              <div className="w-16 h-16 bg-pink-50 rounded-xl flex items-center justify-center text-4xl flex-shrink-0">
+              <div className="w-14 h-14 sm:w-16 sm:h-16 bg-pink-50 rounded-xl flex items-center justify-center text-3xl sm:text-4xl flex-shrink-0">
                 {item.emoji}
               </div>
-              <div className="flex-1">
-                <h3 className="font-bold text-gray-700">{item.nome}</h3>
+
+              <div className="flex-1 min-w-0">
+                <h3 className="font-bold text-gray-700 truncate text-sm sm:text-base">
+                  {item.nome}
+                </h3>
                 <p className="text-pink-600 font-semibold">
-                  R$ {Number(item.preco).toFixed(2).replace(".", ",")}
+                  R$ {(Number(item.preco) * item.quantidade).toFixed(2).replace(".", ",")}
                 </p>
+                {item.quantidade > 1 && (
+                  <p className="text-gray-400 text-xs">
+                    R$ {Number(item.preco).toFixed(2).replace(".", ",")} cada
+                  </p>
+                )}
               </div>
+
+              {/* Controles de quantidade */}
+              <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+                <button
+                  onClick={() => onAlterarQuantidade(item.id, -1)}
+                  className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center text-gray-500 hover:border-pink-400 hover:text-pink-600 transition text-lg leading-none"
+                  aria-label="Diminuir quantidade"
+                >
+                  −
+                </button>
+                <span className="w-6 text-center font-semibold text-gray-700 text-sm">
+                  {item.quantidade}
+                </span>
+                <button
+                  onClick={() => onAlterarQuantidade(item.id, 1)}
+                  className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center text-gray-500 hover:border-pink-400 hover:text-pink-600 transition text-lg leading-none"
+                  aria-label="Aumentar quantidade"
+                >
+                  +
+                </button>
+              </div>
+
               <button
-                onClick={() => onRemover(index)}
-                className="text-gray-300 hover:text-red-400 transition text-2xl font-light"
+                onClick={() => onRemover(item.id)}
+                className="text-gray-300 hover:text-red-400 transition text-2xl font-light flex-shrink-0 ml-1"
+                aria-label="Remover item"
               >
-                x
+                ×
               </button>
             </div>
           ))}
         </div>
 
         {/* Resumo */}
-        <div className="bg-white rounded-2xl shadow p-6 h-fit sticky top-24">
+        <div className="bg-white rounded-2xl shadow p-6 h-fit md:sticky md:top-24">
           <h3 className="text-xl font-bold text-gray-700 mb-4">Resumo</h3>
 
           <div className="flex flex-col gap-2 mb-4">
-            {carrinho.map((item, index) => (
-              <div key={index} className="flex justify-between text-sm text-gray-500">
-                <span className="truncate mr-2">{item.nome}</span>
-                <span className="flex-shrink-0">R$ {Number(item.preco).toFixed(2).replace(".", ",")}</span>
+            {carrinho.map((item) => (
+              <div key={item.id} className="flex justify-between text-sm text-gray-500">
+                <span className="truncate mr-2">
+                  {item.nome}
+                  {item.quantidade > 1 && (
+                    <span className="text-gray-400 ml-1">×{item.quantidade}</span>
+                  )}
+                </span>
+                <span className="flex-shrink-0">
+                  R$ {(Number(item.preco) * item.quantidade).toFixed(2).replace(".", ",")}
+                </span>
               </div>
             ))}
           </div>

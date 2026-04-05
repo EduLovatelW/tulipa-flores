@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { supabase } from "../services/supabase";
 
 const SENHA_ADMIN_HASH = "6aec9ddc40ce4c812034f4b11258596b7e5ddb8ac7ac5b5cfb69b320fc4a696e";
 
@@ -37,30 +36,55 @@ function Admin({ onNavegar }) {
 
   async function buscarPedidos() {
     setCarregando(true);
-    const { data, error } = await supabase
-      .from("pedidos")
-      .select("*")
-      .order("criado_em", { ascending: false });
-    if (!error) setPedidos(data);
-    setCarregando(false);
+    try {
+      const res = await fetch("/api/pedidos");
+      if (!res.ok) throw new Error(`Erro ${res.status}`);
+      const data = await res.json();
+      setPedidos(data);
+    } catch (erro) {
+      console.error("Erro ao buscar pedidos:", erro);
+    } finally {
+      setCarregando(false);
+    }
   }
 
   async function buscarProdutos() {
-    const { data, error } = await supabase
-      .from("produtos")
-      .select("*")
-      .order("categoria");
-    if (!error) setProdutos(data);
+    try {
+      const res = await fetch("/api/produtos-admin");
+      if (!res.ok) throw new Error(`Erro ${res.status}`);
+      const data = await res.json();
+      setProdutos(data);
+    } catch (erro) {
+      console.error("Erro ao buscar produtos:", erro);
+    }
   }
 
   async function mudarStatus(id, novoStatus) {
-    await supabase.from("pedidos").update({ status: novoStatus }).eq("id", id);
-    buscarPedidos();
+    try {
+      const res = await fetch("/api/atualizar-status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, status: novoStatus }),
+      });
+      if (!res.ok) throw new Error(`Erro ${res.status}`);
+      buscarPedidos();
+    } catch (erro) {
+      console.error("Erro ao mudar status:", erro);
+    }
   }
 
   async function toggleDisponivel(id, atual) {
-    await supabase.from("produtos").update({ disponivel: !atual }).eq("id", id);
-    buscarProdutos();
+    try {
+      const res = await fetch("/api/atualizar-produto", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, disponivel: !atual }),
+      });
+      if (!res.ok) throw new Error(`Erro ${res.status}`);
+      buscarProdutos();
+    } catch (erro) {
+      console.error("Erro ao atualizar produto:", erro);
+    }
   }
 
   const statusCores = {

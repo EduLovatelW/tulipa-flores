@@ -16,11 +16,29 @@ function App() {
   const [pedido, setPedido] = useState(null);
 
   function adicionarAoCarrinho(produto) {
-    setCarrinho((prev) => [...prev, produto]);
+    setCarrinho((prev) => {
+      const idx = prev.findIndex((item) => item.id === produto.id);
+      if (idx >= 0) {
+        return prev.map((item, i) =>
+          i === idx ? { ...item, quantidade: item.quantidade + 1 } : item
+        );
+      }
+      return [...prev, { ...produto, quantidade: 1 }];
+    });
   }
 
-  function removerDoCarrinho(index) {
-    setCarrinho((prev) => prev.filter((_, i) => i !== index));
+  function removerDoCarrinho(id) {
+    setCarrinho((prev) => prev.filter((item) => item.id !== id));
+  }
+
+  function alterarQuantidade(id, delta) {
+    setCarrinho((prev) =>
+      prev
+        .map((item) =>
+          item.id === id ? { ...item, quantidade: item.quantidade + delta } : item
+        )
+        .filter((item) => item.quantidade > 0)
+    );
   }
 
   function finalizarPedido(form, total) {
@@ -28,16 +46,23 @@ function App() {
     setCarrinho([]);
   }
 
+  const totalItens = carrinho.reduce((acc, item) => acc + item.quantidade, 0);
+
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header cartCount={carrinho.length} onNavegar={setPagina} />
+      <Header cartCount={totalItens} onNavegar={setPagina} />
       <main className="max-w-6xl mx-auto px-4 py-8">
         {pagina === "home" && <Home onNavegar={setPagina} />}
         {pagina === "catalogo" && (
           <Catalogo onAddToCart={adicionarAoCarrinho} onNavegar={setPagina} />
         )}
         {pagina === "carrinho" && (
-          <Carrinho carrinho={carrinho} onRemover={removerDoCarrinho} onNavegar={setPagina} />
+          <Carrinho
+            carrinho={carrinho}
+            onRemover={removerDoCarrinho}
+            onAlterarQuantidade={alterarQuantidade}
+            onNavegar={setPagina}
+          />
         )}
         {pagina === "checkout" && (
           <Checkout carrinho={carrinho} onNavegar={setPagina} onFinalizarPedido={finalizarPedido} />
