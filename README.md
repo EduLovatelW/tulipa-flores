@@ -23,9 +23,9 @@
 
 ## 📋 Sobre o projeto
 
-**Tulipa Flores** é um e-commerce completo desenvolvido para a floricultura **Tulipa Flores**, localizada em **Pato Branco/PR**. O projeto nasceu como primeira entrega comercial real, cobrindo toda a jornada do cliente: da vitrine de produtos até a confirmação do pedido via WhatsApp.
+Simulação de um e-commerce real de flores e presentes, desenvolvido como primeiro projeto comercial. O site conta com catálogo de produtos, carrinho de compras, checkout completo e painel administrativo.
 
-O sistema inclui um **painel administrativo** para a lojista gerenciar pedidos e disponibilidade de produtos em tempo real, sem qualquer dependência de plataformas de terceiros.
+O desafio foi transformar um processo manual (catálogo em PDF + pedidos pelo WhatsApp) em uma experiência digital completa, do catálogo até a confirmação do pedido.
 
 ---
 
